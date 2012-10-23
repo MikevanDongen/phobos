@@ -34,6 +34,7 @@ private import std.ascii;
 private import std.c.stdlib;
 private import std.utf;
 private import std.stdio;
+private import std.string;
 import std.exception;
 
 class URIerror : Error
@@ -517,4 +518,174 @@ unittest
 
     r = decode("%41%42%43");
     debug(uri) writefln(r);
+}
+
+/**
+ * @author		Mike van Dongen <dlang@mikevandongen.nl>
+ */
+class Uri
+{
+	string scheme;
+	string authority;
+	string path;
+	string query;
+	
+	/**
+	 * This method parses an URI as defined in RFC 3986 (http://www.ietf.org/rfc/rfc3986.txt).
+	 */
+	static Uri parse(in string requestUri)
+	{
+		string rawUri = requestUri;
+		Uri uri = new Uri;
+		
+		if(requestUri.length <= 1)
+			return uri;
+		
+		if(!isAlpha(rawUri[0]))											// The URI must start with a lower case letter.
+			return null;
+		
+		uri.scheme = toLower(munch(rawUri, std.ascii.letters ~ std.ascii.digits ~ "+.-"));	// 'Collects' the characters that are considered to be part of the scheme.
+		if(rawUri.length == 0 || rawUri[0] != ':')
+			return null;
+		
+		if(rawUri.length < 3 || rawUri[1 .. 3] != "//")					// If the URI doesn't continue with '//', than the remainder will be the path.
+		{
+			uri.path = rawUri[1 .. $];									// The path may in this case also be called the 'scheme specific part'.
+			return uri;
+		}
+		
+		rawUri = rawUri[3 .. $];
+		int endIndex = cast(int) [std.string.indexOf(rawUri, '/'), 		// Because of the property 'length', the array is an unsigned long.
+						std.string.indexOf(rawUri, '?'), 				// So even when indexOf returns -1, it will get cast to 18,446,744,073,709,551,615 (2^64 − 1).
+						rawUri.length].sort[0];							// I did it this way because at that moment it seemed like the easiest solution.
+		
+		assert(endIndex != -1);											// If this assert ever fails, explicit casting should be used. Perhaps combined with `Math.min();`
+		
+		if(endIndex == 0)												// The path must be absolute, therefore the authority can not be empty.
+			return null;
+		
+		uri.authority = toLower(rawUri[0 .. endIndex]);					// Both the scheme (above) and the authority are case-insensitive.
+		if(rawUri.length <= endIndex + 1)								// Return when there is nothing left to parse.
+			return uri;
+		rawUri = rawUri[endIndex .. $];
+		
+		// At this point the raw URI that remains, will begin with either a slash or a question mark.
+		
+		if(rawUri[0] == '/')											// The URI has a path. This code is almost identical to the lines above.
+		{
+			rawUri = rawUri[1 .. $];
+			endIndex = cast(int) [std.string.indexOf(rawUri, '?'), 
+							rawUri.length].sort[0];
+			assert(endIndex != -1);
+			
+			uri.path = rawUri[0 .. endIndex];
+			if(rawUri.length <= endIndex + 1)
+				return uri;
+			rawUri = rawUri[endIndex .. $];
+		}
+		
+		uri.query = rawUri[1 .. $];										// If there is anything left, it must be the query.
+		return uri;
+	}
+	
+	unittest
+	{
+		Uri uri;
+		
+		uri = Uri.parse("http://dlang.org/");
+		assert(uri.scheme == "http");
+		assert(uri.authority == "dlang.org");
+		assert(uri.path == "");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("http://dlang.org/unittest.html");
+		assert(uri.scheme == "http");
+		assert(uri.authority == "dlang.org");
+		assert(uri.path == "unittest.html");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("https://openid.stackexchange.com/account/login");
+		assert(uri.scheme == "https");
+		assert(uri.authority == "openid.stackexchange.com");
+		assert(uri.path == "account/login");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("http://www.google.com/search?q=forum&sitesearch=dlang.org");
+		assert(uri.scheme == "http");
+		assert(uri.authority == "www.google.com");
+		assert(uri.path == "search");
+		assert(uri.query == "q=forum&sitesearch=dlang.org");
+		
+		uri = Uri.parse("magnet:?xt=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C");
+		assert(uri.scheme == "magnet");
+		assert(uri.authority == "");
+		assert(uri.path == "?xt=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("ftp://user:password@about.com/Documents/The%20D%20Programming%20Language.pdf");
+		assert(uri.scheme == "ftp");
+		assert(uri.authority == "user:password@about.com");
+		assert(uri.path == "Documents/The%20D%20Programming%20Language.pdf");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("http-://anything.com");
+		assert(uri.scheme == "http-");
+		
+		uri = Uri.parse("-http://anything.com");
+		assert(uri is null);
+		
+		uri = Uri.parse("5five:anything");
+		assert(uri is null);
+		
+		uri = Uri.parse("irc");
+		assert(uri is null);
+		
+		uri = Uri.parse("ftp://ftp.is.co.za/rfc/rfc1808.txt");
+		assert(uri.scheme == "ftp");
+		assert(uri.authority == "ftp.is.co.za");
+		assert(uri.path == "rfc/rfc1808.txt");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("http://www.ietf.org/rfc/rfc2396.txt");
+		assert(uri.scheme == "http");
+		assert(uri.authority == "www.ietf.org");
+		assert(uri.path == "rfc/rfc2396.txt");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("ldap://[2001:db8::7]/c=GB?objectClass?one");
+		assert(uri.scheme == "ldap");
+		assert(uri.authority == "[2001:db8::7]");
+		assert(uri.path == "c=GB");
+		assert(uri.query == "objectClass?one");
+		
+		uri = Uri.parse("mailto:John.Doe@example.com");
+		assert(uri.scheme == "mailto");
+		assert(uri.authority == "");
+		assert(uri.path == "John.Doe@example.com");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("news:comp.infosystems.www.servers.unix");
+		assert(uri.scheme == "news");
+		assert(uri.authority == "");
+		assert(uri.path == "comp.infosystems.www.servers.unix");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("tel:+1-816-555-1212");
+		assert(uri.scheme == "tel");
+		assert(uri.authority == "");
+		assert(uri.path == "+1-816-555-1212");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("telnet://192.0.2.16:80/");
+		assert(uri.scheme == "telnet");
+		assert(uri.authority == "192.0.2.16:80");
+		assert(uri.path == "");
+		assert(uri.query == "");
+		
+		uri = Uri.parse("urn:oasis:names:specification:docbook:dtd:xml:4.1.2");
+		assert(uri.scheme == "urn");
+		assert(uri.authority == "");
+		assert(uri.path == "oasis:names:specification:docbook:dtd:xml:4.1.2");
+		assert(uri.query == "");
+	}
 }
