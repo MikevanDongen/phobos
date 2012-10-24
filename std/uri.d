@@ -35,6 +35,7 @@ private import std.c.stdlib;
 private import std.utf;
 private import std.stdio;
 private import std.string;
+private import std.conv : to;
 import std.exception;
 
 class URIerror : Error
@@ -525,10 +526,135 @@ unittest
  */
 class Uri
 {
-	string scheme;
-	string authority;
-	string path;
-	string query;
+	private
+	{
+		string				_scheme;
+		string				_username;
+		string				_password;
+		string				_host;
+		int					_port;
+		string				_rawPath;
+		string				_rawQuery;
+		string				_fragment;
+		
+		string[]			_path;
+		string[string]		_query;
+	}
+	
+	@property string scheme() { return _scheme; }
+	@property string scheme(string value) { return _scheme = value; }
+	
+	@property string authority()
+	{
+		string rawAuthority = userinfo;
+		if(rawAuthority.length != 0)
+			rawAuthority ~= "@";
+		rawAuthority ~= _host;
+		if(_port != 0)
+			rawAuthority ~= ":" ~ to!string(_port);
+		return rawAuthority;
+	}
+	@property string authority(string value)
+	{
+		string rawAuthority = value;
+		long i = std.string.indexOf(value, '@');
+		if(i != -1)														// Check if it contains userinfo.
+		{
+			string userinfo = value[0 .. i];
+			value = value[i+1 .. $];
+			
+			i = std.string.indexOf(userinfo, ':');
+			if(i != -1)													// Check if it has a password.
+			{
+				password = userinfo[i+1 .. $];
+				userinfo = userinfo[0 .. i];
+			}
+			
+			username = userinfo;
+		}
+		
+		bool ipLiteral = false;
+		if(value[0] == '[')												// Check if it's an IPv6 address (aka IP literal).
+		{
+			i = std.string.indexOf(value, ']');
+			if(i == -1)
+				return null; // Not sure how to handle this atm.
+			host = value[0 .. i+1];
+			value = value[i+1 .. $];
+			ipLiteral = true;
+		}
+		
+		i = std.string.indexOf(value, ':');
+		if(i != -1)														// Check if it contains a port number.
+		{
+			if(ipLiteral && i != 0)										// If it has a portnumber, it should be immediately after the IPv6 address.
+				return null;
+			
+			port = to!int(value[i+1 .. $]);
+			value = value[0 .. i];
+		}
+		
+		if(!ipLiteral)													// If it's an IPv6 address, then we've already assigned it.
+			host = value;
+		
+		return rawAuthority;
+	}
+	
+	@property string path()
+	{
+		return _rawPath;
+	}
+	@property string path(string value)
+	{
+		_path = std.array.split(value, "/");
+		return _rawPath = value;
+	}
+	@property string[] pathAsArray() { return _path; }
+	
+	@property string query()
+	{
+		return _rawQuery;
+	}
+	@property string query(string value)
+	{
+		auto pairs = std.array.split(value, "&");
+		string[string] newQuery;
+		foreach(q; pairs)
+		{
+			auto pair = std.string.indexOf(q, "=");
+			if(pair == -1)
+				newQuery[q] = "";
+			else
+				newQuery[q[0 .. pair]] = q[pair+1 .. $];
+		}
+		_query = newQuery;
+		
+		return _rawQuery = value;
+	}
+	@property string[string] queryAsArray() { return _query; }
+	
+	@property string fragment() { return _fragment; }
+	@property string fragment(string value) { return _fragment = value; }
+	
+	@property string userinfo()
+	{
+		string userinfo = _username;
+		if(_username.length != 0 && _password.length != 0)
+			userinfo ~= ":" ~ _password;
+		return userinfo;
+	}
+	
+	@property string username() { return _username; }
+	@property string username(string value) { return _username = value; }
+	
+	@property string password() { return _password; }
+	@property string password(string value) { return _password = value; }
+	
+	@property string host() { return _host; }
+	@property string host(string value) { return _host = value; }
+	
+	@property int port() { return _port; }
+	@property int port(int value) { return _port = value; }
 	
 	/**
 	 * This method parses an URI as defined in RFC 3986 (http://www.ietf.org/rfc/rfc3986.txt).
@@ -557,7 +683,8 @@ class Uri
 		rawUri = rawUri[3 .. $];
 		int endIndex = cast(int) [std.string.indexOf(rawUri, '/'), 		// Because of the property 'length', the array is an unsigned long.
 						std.string.indexOf(rawUri, '?'), 				// So even when indexOf returns -1, it will get cast to 18,446,744,073,709,551,615 (2^64 − 1).
-						rawUri.length].sort[0];							// I did it this way because at that moment it seemed like the easiest solution.
+						std.string.indexOf(rawUri, '#'), 				// I did it this way because at that moment it seemed like the easiest solution.
+						rawUri.length].sort[0];
 		
 		assert(endIndex != -1);											// If this assert ever fails, explicit casting should be used. Perhaps combined with `Math.min();`
 		
@@ -575,6 +702,7 @@ class Uri
 		{
 			rawUri = rawUri[1 .. $];
 			endIndex = cast(int) [std.string.indexOf(rawUri, '?'), 
+							std.string.indexOf(rawUri, '#'), 
 							rawUri.length].sort[0];
 			assert(endIndex != -1);
 			
@@ -584,7 +712,20 @@ class Uri
 			rawUri = rawUri[endIndex .. $];
 		}
 		
-		uri.query = rawUri[1 .. $];										// If there is anything left, it must be the query.
+		if(rawUri[0] == '?')											// The URI has a query. This code is identical to the lines above.
+		{
+			rawUri = rawUri[1 .. $];
+			endIndex = cast(int) [std.string.indexOf(rawUri, '#'), 
+							rawUri.length].sort[0];
+			assert(endIndex != -1);
+			
+			uri.query = rawUri[0 .. endIndex];
+			if(rawUri.length <= endIndex + 1)
+				return uri;
+			rawUri = rawUri[endIndex .. $];
+		}
+		
+		uri.fragment = rawUri[1 .. $];									// If there is anything left, it must be the fragment.
 		return uri;
 	}
 	
@@ -627,6 +768,10 @@ class Uri
 		assert(uri.authority == "user:password@about.com");
 		assert(uri.path == "Documents/The%20D%20Programming%20Language.pdf");
 		assert(uri.query == "");
+		assert(uri.host == "about.com");
+		assert(uri.port == 0);
+		assert(uri.username == "user");
+		assert(uri.password == "password");
 		
 		uri = Uri.parse("http-://anything.com");
 		assert(uri.scheme == "http-");
@@ -657,6 +802,10 @@ class Uri
 		assert(uri.authority == "[2001:db8::7]");
 		assert(uri.path == "c=GB");
 		assert(uri.query == "objectClass?one");
+		assert(uri.host == "[2001:db8::7]");
+		assert(uri.port == 0);
+		assert(uri.username == "");
+		assert(uri.password == "");
 		
 		uri = Uri.parse("mailto:John.Doe@example.com");
 		assert(uri.scheme == "mailto");
@@ -687,5 +836,23 @@ class Uri
 		assert(uri.authority == "");
 		assert(uri.path == "oasis:names:specification:docbook:dtd:xml:4.1.2");
 		assert(uri.query == "");
+		
+		uri = Uri.parse("foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
+		assert(uri.scheme == "foo");
+		assert(uri.authority == "username:password@example.com:8042");
+		assert(uri.path == "over/there/index.dtb");
+		assert(uri.pathAsArray == ["over", "there", "index.dtb"]);
+		assert(uri.query == "type=animal&name=narwhal&novalue");
+		assert(uri.queryAsArray == ["type": "animal", "name": "narwhal", "novalue": ""]);
+		assert(uri.fragment == "nose");
+		assert(uri.host == "example.com");
+		assert(uri.port == 8042);
+		assert(uri.username == "username");
+		assert(uri.password == "password");
+		assert(uri.userinfo == "username:password");
+		assert(uri.queryAsArray["type"] == "animal");
+		assert(uri.queryAsArray["novalue"] == "");
+		assert("novalue" in uri.queryAsArray);
+		assert(!("nothere" in uri.queryAsArray));
 	}
 }
