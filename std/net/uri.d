@@ -174,6 +174,26 @@ class URI
         return uri;
     }
     
+    override bool opEquals(Object b)
+    {
+        if(auto o = cast(URI) b)
+            return 
+                _path     == o._path &&
+                _query    == o._query &&
+                scheme    == o.scheme &&
+                username  == o.username &&
+                password  == o.password &&
+                host      == o.host &&
+                port      == o.port &&
+                fragment  == o.fragment;
+        return opEquals(b.toString());
+    }
+    
+    bool opEquals(string b)
+    {
+        return toString() == b;
+    }
+    
     /**
      * This method parses an URI as defined in RFC 3986 (http://www.ietf.org/rfc/rfc3986.txt).
      */
@@ -374,7 +394,7 @@ class URI
         assert(uri.query["novalue"] == "");
         assert("novalue" in uri.query);
         assert(!("nothere" in uri.query));
-        assert(uri.toString() == "foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
+        assert(uri == "foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
         
         uri = URI.parse("http://dlang.org/?value&value=1&value=2");
         assert(uri.scheme == "http");
@@ -388,7 +408,7 @@ class URI
         uri.host = "github.com";
         uri.rawPath = "aBothe/Mono-D/blob/master/MonoDevelop.DBinding/Building/ProjectBuilder.cs";
         uri.fragment = "L13";
-        assert(uri.toString() == "https://github.com/aBothe/Mono-D/blob/master/MonoDevelop.DBinding/Building/ProjectBuilder.cs#L13");
+        assert(uri == "https://github.com/aBothe/Mono-D/blob/master/MonoDevelop.DBinding/Building/ProjectBuilder.cs#L13");
         
         uri = new URI();
         uri.scheme = "foo";
@@ -399,16 +419,16 @@ class URI
         uri.path = ["over", "there", "index.dtb"];
         uri.query = ["type": "animal", "name": "narwhal", "novalue": ""];
         uri.fragment = "nose";
-        assert(uri.toString() == "foo://username:password@example.com:8042/over/there/index.dtb?novalue=&type=animal&name=narwhal#nose");
+        assert(uri == URI.parse("foo://username:password@example.com:8042/over/there/index.dtb?novalue=&type=animal&name=narwhal#nose"));
         
         uri = new URI();
         uri.scheme = "https";
         uri.host = "github.com";
         uri.rawPath = "adamdruppe/misc-stuff-including-D-programming-language-web-stuff";
-        assert(uri.toString() == "https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff");
+        assert(uri == "https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff");
         uri.path = uri.path ~ ["blob", "master", "cgi.d"];
         uri.fragment = "L1070";
-        assert(uri.toString() == "https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff/blob/master/cgi.d#L1070");
+        assert(uri == "https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff/blob/master/cgi.d#L1070");
         
         uri = URI.parse("http://[an incomplete ipv6 address/path/to/file.d");
         assert(uri is null);
@@ -427,5 +447,14 @@ class URI
         assert(uri.host == "about.com");
         assert(uri.username == "userwithoutpassword");
         assert(uri.password == uri.password.init);
+        assert(uri != "ftp://about.com/");
+        assert(uri != new ForComparison());
+    }
+}
+
+version(unittest)
+{
+    class ForComparison
+    {
     }
 }
