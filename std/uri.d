@@ -531,7 +531,7 @@ class Uri
         string              _rawPath;
         string              _rawQuery;
         string[]            _path;
-        string[string]      _query;
+        string[][string]      _query;
     }
     
     public
@@ -627,25 +627,42 @@ class Uri
     @property string rawQuery(string value)
     {
         auto pairs = std.array.split(value, "&");
-        string[string] newQuery;
+        string[][string] newQuery;
         foreach(q; pairs)
         {
             auto pair = std.string.indexOf(q, "=");
             if(pair == -1)
-                newQuery[q] = "";
+                newQuery[q] ~= "";
             else
-                newQuery[q[0 .. pair]] = q[pair+1 .. $];
+                newQuery[q[0 .. pair]] ~= q[pair+1 .. $];
         }
         _query = newQuery;
         return _rawQuery = value;
     }
     
-    @property string[string] query() { return _query; }
+    @property string[string] query()
+    {
+        string[string] q;
+        foreach(k, v; _query)
+            q[k] = v[$-1];
+        return q;
+    }
     @property string[string] query(string[string] value)
+    {
+        string[][string] q;
+        foreach(k, v; value)
+            q[k] ~= v;
+        queryMulti = q;
+        return value;
+    }
+    
+    @property string[][string] queryMulti() { return _query; }
+    @property string[][string] queryMulti(string[][string] value)
     {
         string newRawQuery;
         foreach(k, v; value)
-            newRawQuery ~= "&" ~ k ~ "=" ~ v;
+            foreach(rv; v)
+                newRawQuery ~= "&" ~ k ~ "=" ~ rv;
         if(newRawQuery.length != 0)
             newRawQuery = newRawQuery[1 .. $];
         _rawQuery = newRawQuery;
@@ -709,7 +726,9 @@ class Uri
         if(endIndex == 0)                                                   // The path must be absolute, therefore the authority can not be empty.
             return null;
         
-        uri.authority = toLower(rawUri[0 .. endIndex]);                     // Both the scheme (above) and the authority are case-insensitive.
+        if((uri.authority = toLower(rawUri[0 .. endIndex])) is null)        // Both the scheme (above) and the authority are case-insensitive.
+            return null;
+        
         if(rawUri.length <= endIndex + 1)                                   // Return when there is nothing left to parse.
             return uri;
         rawUri = rawUri[endIndex .. $];
@@ -755,19 +774,19 @@ class Uri
         assert(uri.scheme == "http");
         assert(uri.authority == "dlang.org");
         assert(uri.path == []);
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("http://dlang.org/unittest.html");
         assert(uri.scheme == "http");
         assert(uri.authority == "dlang.org");
         assert(uri.path == ["unittest.html"]);
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("https://openid.stackexchange.com/account/login");
         assert(uri.scheme == "https");
         assert(uri.authority == "openid.stackexchange.com");
         assert(uri.path == ["account", "login"]);
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("http://www.google.com/search?q=forum&sitesearch=dlang.org");
         assert(uri.scheme == "http");
@@ -779,13 +798,13 @@ class Uri
         assert(uri.scheme == "magnet");
         assert(uri.authority == "");
         assert(uri.rawPath == "?xt=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C");
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("ftp://user:password@about.com/Documents/The%20D%20Programming%20Language.pdf");
         assert(uri.scheme == "ftp");
         assert(uri.authority == "user:password@about.com");
         assert(uri.path == ["Documents", "The%20D%20Programming%20Language.pdf"]);
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         assert(uri.host == "about.com");
         assert(uri.port == 0);
         assert(uri.username == "user");
@@ -807,13 +826,13 @@ class Uri
         assert(uri.scheme == "ftp");
         assert(uri.authority == "ftp.is.co.za");
         assert(uri.path == ["rfc", "rfc1808.txt"]);
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("http://www.ietf.org/rfc/rfc2396.txt");
         assert(uri.scheme == "http");
         assert(uri.authority == "www.ietf.org");
         assert(uri.path == ["rfc", "rfc2396.txt"]);
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("ldap://[2001:db8::7]/c=GB?objectClass?one");
         assert(uri.scheme == "ldap");
@@ -829,31 +848,31 @@ class Uri
         assert(uri.scheme == "mailto");
         assert(uri.authority == "");
         assert(uri.rawPath == "John.Doe@example.com");
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("news:comp.infosystems.www.servers.unix");
         assert(uri.scheme == "news");
         assert(uri.authority == "");
         assert(uri.rawPath == "comp.infosystems.www.servers.unix");
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("tel:+1-816-555-1212");
         assert(uri.scheme == "tel");
         assert(uri.authority == "");
         assert(uri.rawPath == "+1-816-555-1212");
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("telnet://192.0.2.16:80/");
         assert(uri.scheme == "telnet");
         assert(uri.authority == "192.0.2.16:80");
         assert(uri.path == []);
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("urn:oasis:names:specification:docbook:dtd:xml:4.1.2");
         assert(uri.scheme == "urn");
         assert(uri.authority == "");
         assert(uri.path == ["oasis:names:specification:docbook:dtd:xml:4.1.2"]);
-        assert(uri.query == (string[string]).init);
+        assert(uri.query.length == 0);
         
         uri = Uri.parse("foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
         assert(uri.scheme == "foo");
@@ -874,11 +893,12 @@ class Uri
         assert(!("nothere" in uri.query));
         assert(uri.toString() == "foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
         
-//        uri = Uri.parse("http://dlang.org/?value&value=1&value=2");
-//        assert(uri.scheme == "http");
-//        assert(uri.authority == "dlang.org");
-//        assert(uri.path == []);
-//        assert(uri.query == ["value": "2", "value": "1", "value": ""]);
+        uri = Uri.parse("http://dlang.org/?value&value=1&value=2");
+        assert(uri.scheme == "http");
+        assert(uri.authority == "dlang.org");
+        assert(uri.path == []);
+        assert(uri.queryMulti == ["value": ["", "1", "2"]]);
+        assert(uri.query["value"] == "2");
         
         uri = new Uri();
         uri.scheme = "https";
@@ -896,6 +916,15 @@ class Uri
         uri.path = ["over", "there", "index.dtb"];
         uri.query = ["type": "animal", "name": "narwhal", "novalue": ""];
         uri.fragment = "nose";
-        assert(uri.toString() == "foo://username:password@example.com:8042/over/there/index.dtb?novalue=&name=narwhal&type=animal#nose");
+        assert(uri.toString() == "foo://username:password@example.com:8042/over/there/index.dtb?novalue=&type=animal&name=narwhal#nose");
+        
+        uri = new Uri();
+        uri.scheme = "https";
+        uri.host = "github.com";
+        uri.rawPath = "adamdruppe/misc-stuff-including-D-programming-language-web-stuff";
+        assert(uri.toString() == "https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff");
+        uri.path = uri.path ~ ["blob", "master", "cgi.d"];
+        uri.fragment = "L1070";
+        assert(uri.toString() == "https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff/blob/master/cgi.d#L1070");
     }
 }
