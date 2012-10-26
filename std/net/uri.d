@@ -449,6 +449,71 @@ class URI
         assert(uri.password == uri.password.init);
         assert(uri != "ftp://about.com/");
         assert(uri != new ForComparison());
+        
+        uri = URI.parse("file://localhost/etc/hosts");
+        assert(uri.scheme == "file");
+        assert(uri.host == "localhost");
+        assert(uri.path == ["etc", "hosts"]);
+        
+//      If relative URIs will be supported, these unittests should pass.
+        
+//      //example.org/scheme-relative/URI/with/absolute/path/to/resource.txt
+//      /relative/URI/with/absolute/path/to/resource.txt
+//      relative/path/to/resource.txt
+//      ../../../resource.txt
+//      ./resource.txt#frag01
+//      resource.txt
+//      #frag01
+//      (empty string)
+        
+//        uri = URI.parse("file:///etc/hosts");
+//        assert(uri.scheme == "file");
+//        assert(uri.host == "");
+//        assert(uri.path == ["etc", "hosts"]);
+//        
+//        uri = URI.parse("//example.org/scheme-relative/URI/with/absolute/path/to/resource.txt");
+//        assert(uri.scheme == "");
+//        assert(uri.host == "example.org");
+//        assert(uri.rawPath == "scheme-relative/URI/with/absolute/path/to/resource.txt");
+//        
+//        uri = URI.parse("/relative/URI/with/absolute/path/to/resource.txt");
+//        assert(uri.scheme == "");
+//        assert(uri.host == "");
+//        assert(uri.rawPath == "relative/URI/with/absolute/path/to/resource.txt");
+//        
+//        uri = URI.parse("relative/path/to/resource.txt");
+//        assert(uri.scheme == "");
+//        assert(uri.host == "");
+//        assert(uri.rawPath == "relative/path/to/resource.txt");
+//        
+//        uri = URI.parse("../../../resource.txt");
+//        assert(uri.scheme == "");
+//        assert(uri.host == "");
+//        assert(uri.rawPath == "../../../resource.txt");
+//        
+//        uri = URI.parse("./resource.txt#frag01");
+//        assert(uri.scheme == "");
+//        assert(uri.host == "");
+//        assert(uri.path == [".", "resource.txt"]);
+//        assert(uri.fragment == "frag01");
+//        
+//        uri = URI.parse("resource.txt");
+//        assert(uri.scheme == "");
+//        assert(uri.host == "");
+//        assert(uri.path == ["resource.txt"]);
+//        
+//        uri = URI.parse("#frag01");
+//        assert(uri.scheme == "");
+//        assert(uri.host == "");
+//        assert(uri.path == []);
+//        assert(uri.fragment == "frag01");
+//        
+//        // According to this list, an empty string would be a valid URI reference. I'm not so sure if we should allow it.
+//        // http://en.wikipedia.org/wiki/Uniform_resource_identifier#Examples_of_URI_references
+//        uri = URI.parse("");
+//        assert(uri.scheme == "");
+//        assert(uri.host == "");
+//        assert(uri.path == []);
     }
 }
 
