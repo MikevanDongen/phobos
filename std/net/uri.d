@@ -27,7 +27,7 @@ class URI
         string              fragment;
     }
     
-    @property string authority()
+    @property string authority() const
     {
         string rawAuthority = userinfo;
         if(rawAuthority.length != 0)
@@ -92,22 +92,22 @@ class URI
         return rawAuthority;
     }
     
-    @property string rawPath() { return _rawPath; }
-    @property string rawPath(string value)
+    @property string rawPath() const { return _rawPath; }
+    @property string rawPath(const string value)
     {
         _path = std.array.split(value, "/");
         return _rawPath = value;
     }
     
-    @property string[] path() { return _path; }
+    @property const(string[]) path() const { return _path; }
     @property string[] path(string[] value)
     {
         _rawPath = std.array.join(value, "/");
         return _path = value;
     }
     
-    @property string rawQuery() { return _rawQuery; }
-    @property string rawQuery(string value)
+    @property string rawQuery() const { return _rawQuery; }
+    @property string rawQuery(const string value)
     {
         auto pairs = std.array.split(value, "&");
         string[][string] newQuery;
@@ -123,7 +123,7 @@ class URI
         return _rawQuery = value;
     }
     
-    @property string[string] query()
+    @property string[string] query() const
     {
         string[string] q;
         foreach(k, v; _query)
@@ -152,7 +152,7 @@ class URI
         return _query = value;
     }
     
-    @property string userinfo()
+    @property string userinfo() const
     {
         string userinfo = username;
         if(username.length != 0 && password.length != 0)
@@ -160,7 +160,7 @@ class URI
         return userinfo;
     }
     
-    override string toString()
+    override const string toString() const
     {
         string uri = scheme ~ ":";
         string a = authority;
@@ -189,7 +189,7 @@ class URI
         return opEquals(b.toString());
     }
     
-    bool opEquals(string b)
+    bool opEquals(const string b) const
     {
         return toString() == b;
     }
@@ -271,132 +271,156 @@ class URI
     
     unittest
     {
-        URI uri;
+        const URI uri36 = URI.parse("http://dlang.org/");
+        assert(uri36.scheme == "http");
+        assert(uri36.authority == "dlang.org");
+        assert(uri36.path == []);
+        assert(uri36.query.length == 0);
         
-        uri = URI.parse("http://dlang.org/");
-        assert(uri.scheme == "http");
-        assert(uri.authority == "dlang.org");
-        assert(uri.path == []);
-        assert(uri.query.length == 0);
+        const URI uri37 = URI.parse("http://dlang.org/unittest.html");
+        assert(uri37.scheme == "http");
+        assert(uri37.authority == "dlang.org");
+        assert(uri37.path == ["unittest.html"]);
+        assert(uri37.query.length == 0);
         
-        uri = URI.parse("http://dlang.org/unittest.html");
-        assert(uri.scheme == "http");
-        assert(uri.authority == "dlang.org");
-        assert(uri.path == ["unittest.html"]);
-        assert(uri.query.length == 0);
+        const URI uri38 = URI.parse("https://openid.stackexchange.com/account/login");
+        assert(uri38.scheme == "https");
+        assert(uri38.authority == "openid.stackexchange.com");
+        assert(uri38.path == ["account", "login"]);
+        assert(uri38.query.length == 0);
         
-        uri = URI.parse("https://openid.stackexchange.com/account/login");
-        assert(uri.scheme == "https");
-        assert(uri.authority == "openid.stackexchange.com");
-        assert(uri.path == ["account", "login"]);
-        assert(uri.query.length == 0);
+        const URI uri39 = URI.parse("http://www.google.com/search?q=forum&sitesearch=dlang.org");
+        assert(uri39.scheme == "http");
+        assert(uri39.authority == "www.google.com");
+        assert(uri39.path == ["search"]);
+        assert(uri39.query == ["q": "forum", "sitesearch": "dlang.org"]);
         
-        uri = URI.parse("http://www.google.com/search?q=forum&sitesearch=dlang.org");
-        assert(uri.scheme == "http");
-        assert(uri.authority == "www.google.com");
-        assert(uri.path == ["search"]);
-        assert(uri.query == ["q": "forum", "sitesearch": "dlang.org"]);
+        const URI uri2 = URI.parse("magnet:?xt=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C");
+        assert(uri2.scheme == "magnet");
+        assert(uri2.authority == "");
+        assert(uri2.rawPath == "?xt=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C");
+        assert(uri2.query.length == 0);
         
-        uri = URI.parse("magnet:?xt=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C");
-        assert(uri.scheme == "magnet");
-        assert(uri.authority == "");
-        assert(uri.rawPath == "?xt=urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C");
-        assert(uri.query.length == 0);
+        const URI uri3 = URI.parse("ftp://user:password@about.com/Documents/The%20D%20Programming%20Language.pdf");
+        assert(uri3.scheme == "ftp");
+        assert(uri3.authority == "user:password@about.com");
+        assert(uri3.path == ["Documents", "The%20D%20Programming%20Language.pdf"]);
+        assert(uri3.query.length == 0);
+        assert(uri3.host == "about.com");
+        assert(uri3.port == 0);
+        assert(uri3.username == "user");
+        assert(uri3.password == "password");
         
-        uri = URI.parse("ftp://user:password@about.com/Documents/The%20D%20Programming%20Language.pdf");
-        assert(uri.scheme == "ftp");
-        assert(uri.authority == "user:password@about.com");
-        assert(uri.path == ["Documents", "The%20D%20Programming%20Language.pdf"]);
-        assert(uri.query.length == 0);
-        assert(uri.host == "about.com");
-        assert(uri.port == 0);
-        assert(uri.username == "user");
-        assert(uri.password == "password");
+        const URI uri4 = URI.parse("http-://anything.com");
+        assert(uri4.scheme == "http-");
         
-        uri = URI.parse("http-://anything.com");
-        assert(uri.scheme == "http-");
+        const URI uri5 = URI.parse("-http://anything.com");
+        assert(uri5 is null);
         
-        uri = URI.parse("-http://anything.com");
-        assert(uri is null);
+        const URI uri6 = URI.parse("5five:anything");
+        assert(uri6 is null);
         
-        uri = URI.parse("5five:anything");
-        assert(uri is null);
+        const URI uri7 = URI.parse("irc");
+        assert(uri7 is null);
         
-        uri = URI.parse("irc");
-        assert(uri is null);
+        const URI uri8 = URI.parse("ftp://ftp.is.co.za/rfc/rfc1808.txt");
+        assert(uri8.scheme == "ftp");
+        assert(uri8.authority == "ftp.is.co.za");
+        assert(uri8.path == ["rfc", "rfc1808.txt"]);
+        assert(uri8.query.length == 0);
         
-        uri = URI.parse("ftp://ftp.is.co.za/rfc/rfc1808.txt");
-        assert(uri.scheme == "ftp");
-        assert(uri.authority == "ftp.is.co.za");
-        assert(uri.path == ["rfc", "rfc1808.txt"]);
-        assert(uri.query.length == 0);
+        const URI uri9 = URI.parse("http://www.ietf.org/rfc/rfc2396.txt");
+        assert(uri9.scheme == "http");
+        assert(uri9.authority == "www.ietf.org");
+        assert(uri9.path == ["rfc", "rfc2396.txt"]);
+        assert(uri9.query.length == 0);
         
-        uri = URI.parse("http://www.ietf.org/rfc/rfc2396.txt");
-        assert(uri.scheme == "http");
-        assert(uri.authority == "www.ietf.org");
-        assert(uri.path == ["rfc", "rfc2396.txt"]);
-        assert(uri.query.length == 0);
+        const URI uri10 = URI.parse("ldap://[2001:db8::7]/c=GB?objectClass?one");
+        assert(uri10.scheme == "ldap");
+        assert(uri10.authority == "[2001:db8::7]");
+        assert(uri10.path == ["c=GB"]);
+        assert(uri10.query == ["objectClass?one": ""]);
+        assert(uri10.host == "[2001:db8::7]");
+        assert(uri10.port == 0);
+        assert(uri10.username == "");
+        assert(uri10.password.length == 0);
         
-        uri = URI.parse("ldap://[2001:db8::7]/c=GB?objectClass?one");
-        assert(uri.scheme == "ldap");
-        assert(uri.authority == "[2001:db8::7]");
-        assert(uri.path == ["c=GB"]);
-        assert(uri.query == ["objectClass?one": ""]);
-        assert(uri.host == "[2001:db8::7]");
-        assert(uri.port == 0);
-        assert(uri.username == "");
-        assert(uri.password == "");
+        const URI uri11 = URI.parse("mailto:John.Doe@example.com");
+        assert(uri11.scheme == "mailto");
+        assert(uri11.authority == "");
+        assert(uri11.rawPath == "John.Doe@example.com");
+        assert(uri11.query.length == 0);
         
-        uri = URI.parse("mailto:John.Doe@example.com");
-        assert(uri.scheme == "mailto");
-        assert(uri.authority == "");
-        assert(uri.rawPath == "John.Doe@example.com");
-        assert(uri.query.length == 0);
+        const URI uri12 = URI.parse("news:comp.infosystems.www.servers.unix");
+        assert(uri12.scheme == "news");
+        assert(uri12.authority == "");
+        assert(uri12.rawPath == "comp.infosystems.www.servers.unix");
+        assert(uri12.query.length == 0);
         
-        uri = URI.parse("news:comp.infosystems.www.servers.unix");
-        assert(uri.scheme == "news");
-        assert(uri.authority == "");
-        assert(uri.rawPath == "comp.infosystems.www.servers.unix");
-        assert(uri.query.length == 0);
+        const URI uri13 = URI.parse("tel:+1-816-555-1212");
+        assert(uri13.scheme == "tel");
+        assert(uri13.authority == "");
+        assert(uri13.rawPath == "+1-816-555-1212");
+        assert(uri13.query.length == 0);
         
-        uri = URI.parse("tel:+1-816-555-1212");
-        assert(uri.scheme == "tel");
-        assert(uri.authority == "");
-        assert(uri.rawPath == "+1-816-555-1212");
-        assert(uri.query.length == 0);
+        const URI uri14 = URI.parse("telnet://192.0.2.16:80/");
+        assert(uri14.scheme == "telnet");
+        assert(uri14.authority == "192.0.2.16:80");
+        assert(uri14.path == []);
+        assert(uri14.query.length == 0);
         
-        uri = URI.parse("telnet://192.0.2.16:80/");
-        assert(uri.scheme == "telnet");
-        assert(uri.authority == "192.0.2.16:80");
-        assert(uri.path == []);
-        assert(uri.query.length == 0);
+        const URI uri15 = URI.parse("urn:oasis:names:specification:docbook:dtd:xml:4.1.2");
+        assert(uri15.scheme == "urn");
+        assert(uri15.authority == "");
+        assert(uri15.path == ["oasis:names:specification:docbook:dtd:xml:4.1.2"]);
+        assert(uri15.query.length == 0);
         
-        uri = URI.parse("urn:oasis:names:specification:docbook:dtd:xml:4.1.2");
-        assert(uri.scheme == "urn");
-        assert(uri.authority == "");
-        assert(uri.path == ["oasis:names:specification:docbook:dtd:xml:4.1.2"]);
-        assert(uri.query.length == 0);
+        const URI uri21 = URI.parse("foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
+        assert(uri21.scheme == "foo");
+        assert(uri21.authority == "username:password@example.com:8042");
+        assert(uri21.rawPath == "over/there/index.dtb");
+        assert(uri21.path == ["over", "there", "index.dtb"]);
+        assert(uri21.rawQuery == "type=animal&name=narwhal&novalue");
+        assert(uri21.query == ["type": "animal", "name": "narwhal", "novalue": ""]);
+        assert(uri21.fragment == "nose");
+        assert(uri21.host == "example.com");
+        assert(uri21.port == 8042);
+        assert(uri21.username == "username");
+        assert(uri21.password == "password");
+        assert(uri21.userinfo == "username:password");
+        assert(uri21.query["type"] == "animal");
+        assert(uri21.query["novalue"] == "");
+        assert("novalue" in uri21.query);
+        assert(!("nothere" in uri21.query));
+        assert(uri21 == "foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
         
-        uri = URI.parse("foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
-        assert(uri.scheme == "foo");
-        assert(uri.authority == "username:password@example.com:8042");
-        assert(uri.rawPath == "over/there/index.dtb");
-        assert(uri.path == ["over", "there", "index.dtb"]);
-        assert(uri.rawQuery == "type=animal&name=narwhal&novalue");
-        assert(uri.query == ["type": "animal", "name": "narwhal", "novalue": ""]);
-        assert(uri.fragment == "nose");
-        assert(uri.host == "example.com");
-        assert(uri.port == 8042);
-        assert(uri.username == "username");
-        assert(uri.password == "password");
-        assert(uri.userinfo == "username:password");
-        assert(uri.query["type"] == "animal");
-        assert(uri.query["novalue"] == "");
-        assert("novalue" in uri.query);
-        assert(!("nothere" in uri.query));
-        assert(uri == "foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
+        const URI uri16 = URI.parse("http://[an incomplete ipv6 address/path/to/file.d");
+        assert(uri16 is null);
         
-        uri = URI.parse("http://dlang.org/?value&value=1&value=2");
+        const URI uri17 = URI.parse("http:///path/to/file.d");
+        assert(uri17 is null);
+        
+        const URI uri18 = URI.parse("d");
+        assert(uri18 is null);
+        
+        const URI uri19 = URI.parse("ldap://[2001:db8::7]character:8080/c=GB?objectClass?one");
+        assert(uri19 is null);
+        
+        const URI uri20 = URI.parse("ftp://userwithoutpassword@about.com/");
+        assert(uri20.scheme == "ftp");
+        assert(uri20.host == "about.com");
+        assert(uri20.username == "userwithoutpassword");
+        assert(uri20.password.length == 0);
+        assert(uri20 != "ftp://about.com/");
+        assert(uri20 != new ForComparison());
+        
+        const URI uri22 = URI.parse("file://localhost/etc/hosts");
+        assert(uri22.scheme == "file");
+        assert(uri22.host == "localhost");
+        assert(uri22.path == ["etc", "hosts"]);
+        
+        // This test should be const aswell, but that's not possible yet because of queryMulti.
+        URI uri = URI.parse("http://dlang.org/?value&value=1&value=2");
         assert(uri.scheme == "http");
         assert(uri.authority == "dlang.org");
         assert(uri.path == []);
@@ -429,31 +453,6 @@ class URI
         uri.path = uri.path ~ ["blob", "master", "cgi.d"];
         uri.fragment = "L1070";
         assert(uri == "https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff/blob/master/cgi.d#L1070");
-        
-        uri = URI.parse("http://[an incomplete ipv6 address/path/to/file.d");
-        assert(uri is null);
-        
-        uri = URI.parse("http:///path/to/file.d");
-        assert(uri is null);
-        
-        uri = URI.parse("d");
-        assert(uri is null);
-        
-        uri = URI.parse("ldap://[2001:db8::7]character:8080/c=GB?objectClass?one");
-        assert(uri is null);
-        
-        uri = URI.parse("ftp://userwithoutpassword@about.com/");
-        assert(uri.scheme == "ftp");
-        assert(uri.host == "about.com");
-        assert(uri.username == "userwithoutpassword");
-        assert(uri.password == uri.password.init);
-        assert(uri != "ftp://about.com/");
-        assert(uri != new ForComparison());
-        
-        uri = URI.parse("file://localhost/etc/hosts");
-        assert(uri.scheme == "file");
-        assert(uri.host == "localhost");
-        assert(uri.path == ["etc", "hosts"]);
         
 //      If relative URIs will be supported, these unittests should pass.
         
