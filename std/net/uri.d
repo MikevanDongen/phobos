@@ -139,7 +139,7 @@ class URI
         return value;
     }
     
-    @property string[][string] queryMulti() { return _query; }
+    @property const(string[][string]) queryMulti() const { return _query; }
     @property string[][string] queryMulti(string[][string] value)
     {
         string newRawQuery;
@@ -419,15 +419,14 @@ class URI
         assert(uri22.host == "localhost");
         assert(uri22.path == ["etc", "hosts"]);
         
-        // This test should be const aswell, but that's not possible yet because of queryMulti.
-        URI uri = URI.parse("http://dlang.org/?value&value=1&value=2");
-        assert(uri.scheme == "http");
-        assert(uri.authority == "dlang.org");
-        assert(uri.path == []);
-        assert(uri.queryMulti == ["value": ["", "1", "2"]]);
-        assert(uri.query["value"] == "2");
+        const URI uri23 = URI.parse("http://dlang.org/?value&value=1&value=2");
+        assert(uri23.scheme == "http");
+        assert(uri23.authority == "dlang.org");
+        assert(uri23.path == []);
+        assert(uri23.queryMulti == cast(const) ["value": ["", "1", "2"]]);  // Because of a bug (I think) the cast to const is necessary.
+        assert(uri23.query["value"] == "2");
         
-        uri = new URI();
+        URI uri = new URI();
         uri.scheme = "https";
         uri.host = "github.com";
         uri.rawPath = "aBothe/Mono-D/blob/master/MonoDevelop.DBinding/Building/ProjectBuilder.cs";
