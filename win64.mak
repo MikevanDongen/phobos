@@ -168,7 +168,7 @@ SRC_STD= std\zlib.d std\zip.d std\stdint.d std\container.d std\conv.d std\utf.d 
 	std\regex.d \
 	std\exception.d std\ascii.d
 
-SRC_STD_NET= std\net\isemail.d std\net\curl.d
+SRC_STD_NET= std\net\isemail.d std\net\curl.d std\net\uri.d
 
 SRC_STD_C= std\c\process.d std\c\stdlib.d std\c\time.d std\c\stdio.d \
 	std\c\math.d std\c\stdarg.d std\c\stddef.d std\c\fenv.d std\c\string.d \
@@ -338,6 +338,7 @@ DOCS=	$(DOC)\object.html \
 	$(DOC)\std_zlib.html \
 	$(DOC)\std_net_isemail.html \
 	$(DOC)\std_net_curl.html \
+	$(DOC)\std_net_uri.html \
 	$(DOC)\std_windows_charset.html \
 	$(DOC)\std_windows_registry.html \
 	$(DOC)\std_c_fenv.html \
@@ -645,6 +646,9 @@ $(DOC)\std_net_isemail.html : $(STDDOC) std\net\isemail.d
 
 $(DOC)\std_net_curl.html : $(STDDOC) std\net\curl.d
 	$(DMD) -c -o- $(DDOCFLAGS) -Df$(DOC)\std_net_curl.html $(STDDOC) std\net\curl.d
+
+$(DOC)\std_net_uri.html : $(STDDOC) std\net\uri.d
+	$(DMD) -c -o- $(DDOCFLAGS) -Df$(DOC)\std_net_uri.html $(STDDOC) std\net\uri.d
 
 $(DOC)\std_digest_crc.html : $(STDDOC) std\digest\crc.d
 	$(DMD) -c -o- $(DDOCFLAGS) -Df$(DOC)\std_digest_crc.html $(STDDOC) std\digest\crc.d
