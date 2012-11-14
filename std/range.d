@@ -17,194 +17,161 @@ $(I On Iteration)).
 This module defines several templates for testing whether a given object is a
 _range, and what kind of _range it is:
 $(BOOKTABLE ,
-
-$(TR $(TD $(D $(LREF isInputRange)))
-$(TD Tests if something is an $(I input _range), defined to be something from
-which one can sequentially read data using the primitives $(D front), $(D
-popFront), and $(D empty).
-))
-
-$(TR $(TD $(D $(LREF isOutputRange)))
-$(TD Tests if something is an $(I output _range), defined to be something to
-which one can sequentially write data using the $(D $(LREF put)) primitive.
-))
-
-$(TR $(TD $(D $(LREF isForwardRange)))
-$(TD Tests if something is a $(I forward _range), defined to be an input _range
-with the additional capability that one can save one's current position with
-the $(D save) primitive, thus allowing one to iterate over the same _range
-multiple times.
-))
-
-$(TR $(TD $(D $(LREF isBidirectionalRange)))
-$(TD Tests if something is a $(I bidirectional _range), that is, a forward
-_range that allows reverse traversal using the primitives $(D back) and $(D
-popBack).
-))
-
-$(TR $(TD $(D $(LREF isRandomAccessRange)))
-$(TD Tests if something is a $(I random access _range), which is a
-bidirectional _range that also supports the array subscripting operation via
-the primitive $(D opIndex).
-))
-
+    $(TR $(TD $(D $(LREF isInputRange)))
+        $(TD Tests if something is an $(I input _range), defined to be
+        something from which one can sequentially read data using the
+        primitives $(D front), $(D popFront), and $(D empty).
+    ))
+    $(TR $(TD $(D $(LREF isOutputRange)))
+        $(TD Tests if something is an $(I output _range), defined to be
+        something to which one can sequentially write data using the $(D $(LREF
+        put)) primitive.
+    ))
+    $(TR $(TD $(D $(LREF isForwardRange)))
+        $(TD Tests if something is a $(I forward _range), defined to be an
+        input _range with the additional capability that one can save one's
+        current position with the $(D save) primitive, thus allowing one to
+        iterate over the same _range multiple times.
+    ))
+    $(TR $(TD $(D $(LREF isBidirectionalRange)))
+        $(TD Tests if something is a $(I bidirectional _range), that is, a
+        forward _range that allows reverse traversal using the primitives $(D
+        back) and $(D popBack).
+    ))
+    $(TR $(TD $(D $(LREF isRandomAccessRange)))
+        $(TD Tests if something is a $(I random access _range), which is a
+        bidirectional _range that also supports the array subscripting
+        operation via the primitive $(D opIndex).
+    ))
 )
 
 A number of templates are provided that test for various _range capabilities:
 
 $(BOOKTABLE ,
-
-$(TR $(TD $(D $(LREF hasMobileElements)))
-$(TD Tests if a given _range's elements can be moved around using the
-primitives $(D moveFront), $(D moveBack), or $(D moveAt).
-))
-
-$(TR $(TD $(D $(LREF ElementType)))
-$(TD Returns the element type of a given _range.
-))
-
-$(TR $(TD $(D $(LREF ElementEncodingType)))
-$(TD Returns the encoding element type of a given _range.
-))
-
-$(TR $(TD $(D $(LREF hasSwappableElements)))
-$(TD Tests if a _range is a forward _range with swappable elements.
-))
-
-$(TR $(TD $(D $(LREF hasAssignableElements)))
-$(TD Tests if a _range is a forward _range with mutable elements.
-))
-
-$(TR $(TD $(D $(LREF hasLvalueElements)))
-$(TD Tests if a _range is a forward _range with elements that can be passed by
-reference and have their address taken.
-))
-
-$(TR $(TD $(D $(LREF hasLength)))
-$(TD Tests if a given _range has the $(D length) attribute.
-))
-
-$(TR $(TD $(D $(LREF isInfinite)))
-$(TD Tests if a given _range is an $(I infinite _range).
-))
-
-$(TR $(TD $(D $(LREF hasSlicing)))
-$(TD Tests if a given _range supports the array slicing operation $(D R[x..y]).
-))
-
-$(TR $(TD $(D $(LREF walkLength)))
-$(TD Computes the length of any _range in O(n) time.
-))
-
+    $(TR $(TD $(D $(LREF hasMobileElements)))
+        $(TD Tests if a given _range's elements can be moved around using the
+        primitives $(D moveFront), $(D moveBack), or $(D moveAt).
+    ))
+    $(TR $(TD $(D $(LREF ElementType)))
+        $(TD Returns the element type of a given _range.
+    ))
+    $(TR $(TD $(D $(LREF ElementEncodingType)))
+        $(TD Returns the encoding element type of a given _range.
+    ))
+    $(TR $(TD $(D $(LREF hasSwappableElements)))
+        $(TD Tests if a _range is a forward _range with swappable elements.
+    ))
+    $(TR $(TD $(D $(LREF hasAssignableElements)))
+        $(TD Tests if a _range is a forward _range with mutable elements.
+    ))
+    $(TR $(TD $(D $(LREF hasLvalueElements)))
+        $(TD Tests if a _range is a forward _range with elements that can be
+        passed by reference and have their address taken.
+    ))
+    $(TR $(TD $(D $(LREF hasLength)))
+        $(TD Tests if a given _range has the $(D length) attribute.
+    ))
+    $(TR $(TD $(D $(LREF isInfinite)))
+        $(TD Tests if a given _range is an $(I infinite _range).
+    ))
+    $(TR $(TD $(D $(LREF hasSlicing)))
+        $(TD Tests if a given _range supports the array slicing operation $(D
+        R[x..y]).
+    ))
+    $(TR $(TD $(D $(LREF walkLength)))
+        $(TD Computes the length of any _range in O(n) time.
+    ))
 )
 
 A rich set of _range creation and composition templates are provided that let
 you construct new ranges out of existing ranges:
 
 $(BOOKTABLE ,
-
-$(TR $(TD $(D $(LREF retro)))
-$(TD Iterates a bidirectional _range backwards.
-))
-
-$(TR $(TD $(D $(LREF stride)))
-$(TD Iterates a _range with stride $(I n).
-))
-
-$(TR $(TD $(D $(LREF chain)))
-$(TD Concatenates several ranges into a single _range.
-))
-
-$(TR $(TD $(D $(LREF roundRobin)))
-$(TD Given $(I n) ranges, creates a new _range that return the $(I n) first
-elements of each _range, in turn, then the second element of each _range, and
-so on, in a round-robin fashion.
-))
-
-$(TR $(TD $(D $(LREF radial)))
-$(TD Given a random-access _range and a starting point, creates a _range that
-alternately returns the next left and next right element to the starting point.
-))
-
-$(TR $(TD $(D $(LREF take)))
-$(TD Creates a sub-_range consisting of only up to the first $(I n) elements of
-the given _range.
-))
-
-$(TR $(TD $(D $(LREF takeExactly)))
-$(TD Like $(D take), but assumes the given _range actually has $(I n) elements,
-and therefore also defines the $(D length) property.
-))
-
-$(TR $(TD $(D $(LREF takeOne)))
-$(TD Creates a random-access _range consisting of exactly the first element of
-the given _range.
-))
-
-$(TR $(TD $(D $(LREF takeNone)))
-$(TD Creates a random-access _range consisting of zero elements of the given
-_range.
-))
-
-$(TR $(TD $(D $(LREF drop)))
-$(TD Creates the _range that results from discarding the first $(I n) elements
-from the given _range.
-))
-
-$(TR $(TD $(D $(LREF repeat)))
-$(TD Creates a _range that consists of a single element repeated $(I n) times,
-or an infinite _range repeating that element indefinitely.
-))
-
-$(TR $(TD $(D $(LREF cycle)))
-$(TD Creates an infinite _range that repeats the given forward _range
-indefinitely. Good for implementing circular buffers.
-))
-
-$(TR $(TD $(D $(LREF zip)))
-$(TD Given $(I n) _ranges, creates a _range that successively returns a tuple
-of all the first elements, a tuple of all the second elements, etc.
-))
-
-$(TR $(TD $(D $(LREF lockstep)))
-$(TD Iterates $(I n) _ranges in lockstep, for use in a $(D foreach) loop.
-Similar to $(D zip), except that $(D lockstep) is designed especially for $(D
-foreach) loops.
-))
-
-$(TR $(TD $(D $(LREF recurrence)))
-$(TD Creates a forward _range whose values are defined by a mathematical
-recurrence relation.
-))
-
-$(TR $(TD $(D $(LREF sequence)))
-$(TD Similar to $(D recurrence), except that a random-access _range is created.
-))
-
-$(TR $(TD $(D $(LREF iota)))
-$(TD Creates a _range consisting of numbers between a starting point and ending
-point, spaced apart by a given interval.
-))
-
-$(TR $(TD $(D $(LREF frontTransversal)))
-$(TD Creates a _range that iterates over the first elements of the given
-ranges.
-))
-
-$(TR $(TD $(D $(LREF transversal)))
-$(TD Creates a _range that iterates over the $(I n)'th elements of the given
-random-access ranges.
-))
-
-$(TR $(TD $(D $(LREF indexed)))
-$(TD Creates a _range that offers a view of a given _range as though its
-elements were reordered according to a given _range of indices.
-))
-
-$(TR $(TD $(D $(LREF chunks)))
-$(TD Creates a _range that returns fixed-size chunks of the original _range.
-))
-
+    $(TR $(TD $(D $(LREF retro)))
+        $(TD Iterates a bidirectional _range backwards.
+    ))
+    $(TR $(TD $(D $(LREF stride)))
+        $(TD Iterates a _range with stride $(I n).
+    ))
+    $(TR $(TD $(D $(LREF chain)))
+        $(TD Concatenates several ranges into a single _range.
+    ))
+    $(TR $(TD $(D $(LREF roundRobin)))
+        $(TD Given $(I n) ranges, creates a new _range that return the $(I n)
+        first elements of each _range, in turn, then the second element of each
+        _range, and so on, in a round-robin fashion.
+    ))
+    $(TR $(TD $(D $(LREF radial)))
+        $(TD Given a random-access _range and a starting point, creates a
+        _range that alternately returns the next left and next right element to
+        the starting point.
+    ))
+    $(TR $(TD $(D $(LREF take)))
+        $(TD Creates a sub-_range consisting of only up to the first $(I n)
+        elements of the given _range.
+    ))
+    $(TR $(TD $(D $(LREF takeExactly)))
+        $(TD Like $(D take), but assumes the given _range actually has $(I n)
+        elements, and therefore also defines the $(D length) property.
+    ))
+    $(TR $(TD $(D $(LREF takeOne)))
+        $(TD Creates a random-access _range consisting of exactly the first
+        element of the given _range.
+    ))
+    $(TR $(TD $(D $(LREF takeNone)))
+        $(TD Creates a random-access _range consisting of zero elements of the
+        given _range.
+    ))
+    $(TR $(TD $(D $(LREF drop)))
+        $(TD Creates the _range that results from discarding the first $(I n)
+        elements from the given _range.
+    ))
+    $(TR $(TD $(D $(LREF repeat)))
+        $(TD Creates a _range that consists of a single element repeated $(I n)
+        times, or an infinite _range repeating that element indefinitely.
+    ))
+    $(TR $(TD $(D $(LREF cycle)))
+        $(TD Creates an infinite _range that repeats the given forward _range
+        indefinitely. Good for implementing circular buffers.
+    ))
+    $(TR $(TD $(D $(LREF zip)))
+        $(TD Given $(I n) _ranges, creates a _range that successively returns a
+        tuple of all the first elements, a tuple of all the second elements,
+        etc.
+    ))
+    $(TR $(TD $(D $(LREF lockstep)))
+        $(TD Iterates $(I n) _ranges in lockstep, for use in a $(D foreach)
+        loop. Similar to $(D zip), except that $(D lockstep) is designed
+        especially for $(D foreach) loops.
+    ))
+    $(TR $(TD $(D $(LREF recurrence)))
+        $(TD Creates a forward _range whose values are defined by a
+        mathematical recurrence relation.
+    ))
+    $(TR $(TD $(D $(LREF sequence)))
+        $(TD Similar to $(D recurrence), except that a random-access _range is
+        created.
+    ))
+    $(TR $(TD $(D $(LREF iota)))
+        $(TD Creates a _range consisting of numbers between a starting point
+        and ending point, spaced apart by a given interval.
+    ))
+    $(TR $(TD $(D $(LREF frontTransversal)))
+        $(TD Creates a _range that iterates over the first elements of the
+        given ranges.
+    ))
+    $(TR $(TD $(D $(LREF transversal)))
+        $(TD Creates a _range that iterates over the $(I n)'th elements of the
+        given random-access ranges.
+    ))
+    $(TR $(TD $(D $(LREF indexed)))
+        $(TD Creates a _range that offers a view of a given _range as though
+        its elements were reordered according to a given _range of indices.
+    ))
+    $(TR $(TD $(D $(LREF chunks)))
+        $(TD Creates a _range that returns fixed-size chunks of the original
+        _range.
+    ))
 )
 
 These _range-construction tools are implemented using templates; but sometimes
@@ -213,57 +180,44 @@ provides a number of object and $(D interface) definitions that can be used to
 wrap around _range objects created by the above templates:
 
 $(BOOKTABLE ,
-
-$(TR $(TD $(D $(LREF InputRange)))
-$(TD Wrapper for input ranges.
-))
-
-$(TR $(TD $(D $(LREF InputAssignable)))
-$(TD Wrapper for input ranges with assignable elements.
-))
-
-$(TR $(TD $(D $(LREF ForwardRange)))
-$(TD Wrapper for forward ranges.
-))
-
-$(TR $(TD $(D $(LREF ForwardAssignable)))
-$(TD Wrapper for forward ranges with assignable elements.
-))
-
-$(TR $(TD $(D $(LREF BidirectionalRange)))
-$(TD Wrapper for bidirectional ranges.
-))
-
-$(TR $(TD $(D $(LREF BidirectionalAssignable)))
-$(TD Wrapper for bidirectional ranges with assignable elements.
-))
-
-$(TR $(TD $(D $(LREF RandomAccessFinite)))
-$(TD Wrapper for finite random-access ranges.
-))
-
-$(TR $(TD $(D $(LREF RandomAccessAssignable)))
-$(TD Wrapper for finite random-access ranges with assignable elements.
-))
-
-$(TR $(TD $(D $(LREF RandomAccessInfinite)))
-$(TD Wrapper for infinite random-access ranges.
-))
-
-$(TR $(TD $(D $(LREF OutputRange)))
-$(TD Wrapper for output ranges.
-))
-
-$(TR $(TD $(D $(LREF OutputRangeObject)))
-$(TD Class that implements the $(D OutputRange) interface and wraps the
-$(D put) methods in virtual functions.
-))
-
-$(TR $(TD $(D $(LREF InputRangeObject)))
-$(TD Class that implements the $(D InputRange) interface and wraps the input
-_range methods in virtual functions.
-))
-
+    $(TR $(TD $(D $(LREF InputRange)))
+        $(TD Wrapper for input ranges.
+    ))
+    $(TR $(TD $(D $(LREF InputAssignable)))
+        $(TD Wrapper for input ranges with assignable elements.
+    ))
+    $(TR $(TD $(D $(LREF ForwardRange)))
+        $(TD Wrapper for forward ranges.
+    ))
+    $(TR $(TD $(D $(LREF ForwardAssignable)))
+        $(TD Wrapper for forward ranges with assignable elements.
+    ))
+    $(TR $(TD $(D $(LREF BidirectionalRange)))
+        $(TD Wrapper for bidirectional ranges.
+    ))
+    $(TR $(TD $(D $(LREF BidirectionalAssignable)))
+        $(TD Wrapper for bidirectional ranges with assignable elements.
+    ))
+    $(TR $(TD $(D $(LREF RandomAccessFinite)))
+        $(TD Wrapper for finite random-access ranges.
+    ))
+    $(TR $(TD $(D $(LREF RandomAccessAssignable)))
+        $(TD Wrapper for finite random-access ranges with assignable elements.
+    ))
+    $(TR $(TD $(D $(LREF RandomAccessInfinite)))
+        $(TD Wrapper for infinite random-access ranges.
+    ))
+    $(TR $(TD $(D $(LREF OutputRange)))
+        $(TD Wrapper for output ranges.
+    ))
+    $(TR $(TD $(D $(LREF OutputRangeObject)))
+        $(TD Class that implements the $(D OutputRange) interface and wraps the
+        $(D put) methods in virtual functions.
+    ))
+    $(TR $(TD $(D $(LREF InputRangeObject)))
+        $(TD Class that implements the $(D InputRange) interface and wraps the
+        input _range methods in virtual functions.
+    ))
 )
 
 Ranges whose elements are sorted afford better efficiency with certain
@@ -277,27 +231,22 @@ Finally, this module also defines some convenience functions for
 manipulating ranges:
 
 $(BOOKTABLE ,
-
-$(TR $(TD $(D $(LREF popFrontN)))
-$(TD Advances a given _range by $(I n) elements.
-))
-
-$(TR $(TD $(D $(LREF popBackN)))
-$(TD Advances a given bidirectional _range from the right by $(I n) elements.
-))
-
-$(TR $(TD $(D $(LREF moveFront)))
-$(TD Removes the front element of a _range.
-))
-
-$(TR $(TD $(D $(LREF moveBack)))
-$(TD Removes the back element of a bidirectional _range.
-))
-
-$(TR $(TD $(D $(LREF moveAt)))
-$(TD Removes the $(I i)'th element of a random-access _range.
-))
-
+    $(TR $(TD $(D $(LREF popFrontN)))
+        $(TD Advances a given _range by $(I n) elements.
+    ))
+    $(TR $(TD $(D $(LREF popBackN)))
+        $(TD Advances a given bidirectional _range from the right by $(I n)
+        elements.
+    ))
+    $(TR $(TD $(D $(LREF moveFront)))
+        $(TD Removes the front element of a _range.
+    ))
+    $(TR $(TD $(D $(LREF moveBack)))
+        $(TD Removes the back element of a bidirectional _range.
+    ))
+    $(TR $(TD $(D $(LREF moveAt)))
+        $(TD Removes the $(I i)'th element of a random-access _range.
+    ))
 )
 
 Source: $(PHOBOSSRC std/_range.d)
@@ -549,7 +498,7 @@ calling $(D r.empty) has, or would have, returned $(D false).))
 template isInputRange(R)
 {
     enum bool isInputRange = is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         R r = void;       // can define a range object
         if (r.empty) {}   // can test for empty
@@ -582,28 +531,29 @@ are attempted in order, and the first to compile "wins" and gets
 evaluated.
 
 $(BOOKTABLE ,
-
-$(TR $(TH Code Snippet) $(TH Scenario))
-
+$(TR $(TH Code Snippet) $(TH Scenario
+))
 $(TR $(TD $(D r.put(e);)) $(TD $(D R) specifically defines a method
-$(D put) accepting an $(D E).))
-
+    $(D put) accepting an $(D E).
+))
 $(TR $(TD $(D r.put([ e ]);)) $(TD $(D R) specifically defines a
-method $(D put) accepting an $(D E[]).))
-
+    method $(D put) accepting an $(D E[]).
+))
 $(TR $(TD $(D r.front = e; r.popFront();)) $(TD $(D R) is an input
-range and $(D e) is assignable to $(D r.front).))
-
+    range and $(D e) is assignable to $(D r.front).
+))
 $(TR $(TD $(D for (; !e.empty; e.popFront()) put(r, e.front);)) $(TD
-Copying range $(D E) to range $(D R).))
-
+    Copying range $(D E) to range $(D R).
+))
 $(TR $(TD $(D r(e);)) $(TD $(D R) is e.g. a delegate accepting an $(D
-E).))
-
+    E).
+))
 $(TR $(TD $(D r([ e ]);)) $(TD $(D R) is e.g. a $(D delegate)
-accepting an $(D E[]).))
-
+    accepting an $(D E[]).
+))
 )
+
+Note that $(D R) does not have to be a range.
  */
 void put(R, E)(ref R r, E e)
 {
@@ -757,7 +707,7 @@ supports the operation $(D put(r, e)) as defined above.
 template isOutputRange(R, E)
 {
     enum bool isOutputRange = is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         R r = void;
         E e;
@@ -815,7 +765,7 @@ object with $(D save) and using it later.
 template isForwardRange(R)
 {
     enum bool isForwardRange = isInputRange!R && is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         R r1 = void;
         R r2 = r1.save; // can call "save" against a range object
@@ -855,7 +805,7 @@ $(D r.empty) has, or would have, returned $(D false).))
 template isBidirectionalRange(R)
 {
     enum bool isBidirectionalRange = isForwardRange!R && is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         R r = void;
         r.popBack();
@@ -905,6 +855,7 @@ static assert(isForwardRange!R);  // range is forward
 static assert(isBidirectionalRange!R || isInfinite!R);
                                   // range is bidirectional or infinite
 auto e = r[1];                    // can index
+static assert(is(typeof(e) == typeof(r.front))); // same type for indexed and front
 ----
 
 The semantics of a random-access range (not checkable during
@@ -921,12 +872,13 @@ are bidirectional ranges only.
 template isRandomAccessRange(R)
 {
     enum bool isRandomAccessRange = is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         static assert(isBidirectionalRange!R ||
                       isForwardRange!R && isInfinite!R);
         R r = void;
         auto e = r[1];
+        static assert(is(typeof(e) == typeof(r.front)));
         static assert(!isNarrowString!R);
         static assert(hasLength!R || isInfinite!R);
     }));
@@ -1002,25 +954,30 @@ unittest
 }
 
 /**
-Returns $(D true) iff the range supports the $(D moveFront) primitive,
+Returns $(D true) iff $(D R) supports the $(D moveFront) primitive,
 as well as $(D moveBack) and $(D moveAt) if it's a bidirectional or
 random access range.  These may be explicitly implemented, or may work
 via the default behavior of the module level functions $(D moveFront)
 and friends.
+
+Note that $(D R) does not have to be a range.
  */
 template hasMobileElements(R)
 {
     enum bool hasMobileElements = is(typeof(
+    (inout int = 0)
     {
         R r = void;
         return moveFront(r);
     }))
     && (!isBidirectionalRange!R || is(typeof(
+    (inout int = 0)
     {
         R r = void;
         return moveBack(r);
     })))
     && (!isRandomAccessRange!R || is(typeof(
+    (inout int = 0)
     {
         R r = void;
         return moveAt(r, 0);
@@ -1037,18 +994,23 @@ unittest
     auto nonMobile = map!"a"(repeat(HasPostblit.init));
     static assert(!hasMobileElements!(typeof(nonMobile)));
     static assert( hasMobileElements!(int[]));
+    static assert( hasMobileElements!(inout(int)[]));
     static assert( hasMobileElements!(typeof(iota(1000))));
 }
 
 /**
 The element type of $(D R). $(D R) does not have to be a range. The
 element type is determined as the type yielded by $(D r.front) for an
-object $(D r) or type $(D R). For example, $(D ElementType!(T[])) is
-$(D T). If $(D R) is not a range, $(D ElementType!R) is $(D void).
+object $(D r) of type $(D R). For example, $(D ElementType!(T[])) is
+$(D T) if $(D T[]) isn't a narrow string; if it is, the element type is
+$(D dchar). If $(D R) doesn't have $(D front), $(D ElementType!R) is
+$(D void).
+
+Note that $(D R) does not have to be a range.
  */
 template ElementType(R)
 {
-    static if (is(typeof((inout int _dummy=0){ R r = void; return r.front; }()) T))
+    static if (is(typeof((inout int = 0){ R r = void; return r.front; }()) T))
         alias T ElementType;
     else
         alias void ElementType;
@@ -1072,13 +1034,15 @@ unittest
 The encoding element type of $(D R). For narrow strings ($(D char[]),
 $(D wchar[]) and their qualified variants including $(D string) and
 $(D wstring)), $(D ElementEncodingType) is the character type of the
-string. For all other ranges, $(D ElementEncodingType) is the same as
+string. For all other types, $(D ElementEncodingType) is the same as
 $(D ElementType).
+
+Note that $(D R) does not have to be a range.
  */
 template ElementEncodingType(R)
 {
     static if (isNarrowString!R)
-        alias typeof((inout int _dummy=0){ R r = void; return r[0]; }()) ElementEncodingType;
+        alias typeof((inout int = 0){ R r = void; return r[0]; }()) ElementEncodingType;
     else
         alias ElementType!R ElementEncodingType;
 }
@@ -1103,8 +1067,8 @@ unittest
 
 /**
 Returns $(D true) if $(D R) is a forward range and has swappable
-elements. The following code should compile for any random-access
-range.
+elements. The following code should compile for any range
+with swappable elements.
 
 ----
 R r;
@@ -1115,7 +1079,7 @@ swap(r.front, r.front);              // can swap elements of the range
 template hasSwappableElements(R)
 {
     enum bool hasSwappableElements = isForwardRange!R && is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         R r = void;
         swap(r.front, r.front);             // can swap elements of the range
@@ -1133,8 +1097,8 @@ unittest
 
 /**
 Returns $(D true) if $(D R) is a forward range and has mutable
-elements. The following code should compile for any random-access
-range.
+elements. The following code should compile for any range
+with assignable elements.
 
 ----
 R r;
@@ -1146,7 +1110,7 @@ r.front = e;                      // can assign elements of the range
 template hasAssignableElements(R)
 {
     enum bool hasAssignableElements = isForwardRange!R && is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         R r = void;
         static assert(isForwardRange!(R)); // range is forward
@@ -1166,11 +1130,13 @@ unittest
 /**
 Tests whether $(D R) has lvalue elements.  These are defined as elements that
 can be passed by reference and have their address taken.
+
+Note that $(D R) does not have to be a range.
 */
 template hasLvalueElements(R)
 {
     enum bool hasLvalueElements = is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         void checkRef(ref ElementType!R stuff) {}
         R r = void;
@@ -1208,11 +1174,13 @@ hasLength) yields $(D false) for them. This is because a narrow
 string's length does not reflect the number of characters, but instead
 the number of encoding units, and as such is not useful with
 range-oriented algorithms.
+
+Note that $(D R) does not have to be a range.
  */
 template hasLength(R)
 {
     enum bool hasLength = !isNarrowString!R && is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         R r = void;
         static assert(is(typeof(r.length) : ulong));
@@ -1272,11 +1240,13 @@ R r;
 auto s = r[1 .. 2];
 static assert(isInputRange!(typeof(s)));
 ----
+
+Note that $(D R) does not have to be a range.
  */
 template hasSlicing(R)
 {
     enum bool hasSlicing = !isNarrowString!R && is(typeof(
-    (inout int _dummy=0)
+    (inout int = 0)
     {
         R r = void;
         auto s = r[1 .. 2];
@@ -2838,11 +2808,15 @@ n) elements. Consequently, the result of $(D takeExactly(range, n))
 always defines the $(D length) property (and initializes it to $(D n))
 even when $(D range) itself does not define $(D length).
 
-If $(D R) has slicing, $(D takeExactly) simply returns a slice of $(D
-range). Otherwise if $(D R) is an input range, the type of the result
+If $(D R) has slicing and its slice has length, $(D takeExactly) simply
+returns a slice of $(D range).
+Otherwise if $(D R) is an input range, the type of the result
 is an input range with length. Finally, if $(D R) is a forward range
 (including bidirectional), the type of the result is a forward range
 with length.
+
+Note that $(D R) does not have to be a range in case it has slicing and
+its slice has length.
  */
 auto takeExactly(R)(R range, size_t n)
 if (isInputRange!R && !hasSlicing!R)
@@ -2883,7 +2857,7 @@ if (isInputRange!R && !hasSlicing!R)
 }
 
 auto takeExactly(R)(R range, size_t n)
-if (hasSlicing!R)
+if (hasSlicing!R && hasLength!(typeof(range[0 .. n])))
 {
     return range[0 .. n];
 }
@@ -3418,6 +3392,9 @@ assert(equal(take(cycle([1, 2][]), 5), [ 1, 2, 1, 2, 1 ][]));
 ----
 
 Tip: This is a great way to implement simple circular buffers.
+
+Note that $(D Range) does not have to be a range as $(D Cycle) also
+accepts static arrays which aren't ranges (see $(LREF isInputRange)).
 */
 struct Cycle(Range)
     if (isForwardRange!(Unqual!Range) && !isInfinite!(Unqual!Range))
@@ -3660,7 +3637,7 @@ unittest // For infinite ranges
     assert (c == i);
 }
 
-private template lengthType(R) { alias typeof({ R r = void; return r.length; }()) lengthType; }
+private template lengthType(R) { alias typeof((inout int = 0){ R r = void; return r.length; }()) lengthType; }
 
 /**
    Iterate several ranges in lockstep. The element type is a proxy tuple
@@ -6035,7 +6012,7 @@ assert(chunks.front == chunks[0]);
 assert(chunks.length == 3);
 ---
 */
-struct Chunks(Source) if(hasSlicing!Source && hasLength!Source)
+struct Chunks(Source) if(isInputRange!Source && hasSlicing!Source && hasLength!Source)
 {
     ///
     this(Source source, size_t chunkSize)
@@ -6172,6 +6149,8 @@ unittest
    Moves the front of $(D r) out and returns it. Leaves $(D r.front) in a
    destroyable state that does not allocate any resources (usually equal
    to its $(D .init) value).
+
+   Note that $(D R) does not have to be a range.
 */
 ElementType!R moveFront(R)(R r)
 {
@@ -6202,6 +6181,8 @@ unittest
    Moves the back of $(D r) out and returns it. Leaves $(D r.back) in a
    destroyable state that does not allocate any resources (usually equal
    to its $(D .init) value).
+
+   Note that $(D R) does not have to be a range.
 */
 ElementType!R moveBack(R)(R r)
 {
@@ -6238,6 +6219,8 @@ unittest
    Moves element at index $(D i) of $(D r) out and returns it. Leaves $(D
    r.front) in a destroyable state that does not allocate any resources
    (usually equal to its $(D .init) value).
+
+   Note that $(D R) does not have to be a range.
 */
 ElementType!R moveAt(R, I)(R r, I i) if (isIntegral!I)
 {
