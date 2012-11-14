@@ -171,9 +171,9 @@ STD_MODULES = $(addprefix std/, algorithm array ascii base64 bigint		\
         stdint stdio stdiobase stream string syserror system traits		\
         typecons typetuple uni uri utf uuid variant xml zip zlib)
 
-STD_NET_MODULES = $(addprefix std/net/, isemail curl)
+STD_NET_MODULES = $(addprefix std/net/, isemail curl uri)
 
-STD_DIGEST_MODULES = $(addprefix std/digest/, digest crc md sha)
+STD_DIGEST_MODULES = $(addprefix std/digest/, digest crc md ripemd sha)
 
 # OS-specific D modules
 EXTRA_MODULES_LINUX := $(addprefix std/c/linux/, linux socket)
