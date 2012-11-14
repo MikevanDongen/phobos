@@ -21,31 +21,32 @@
  + 
  + Its usage is quite straightforward; to parse an URI, the user should give the string to the constructor as follows:
  + -------
- + auto uri = URI("http://dlang.org/");
+ + auto u = URI("http://dlang.org/");
  + -------
  + From this point on, components of the URI can be both read and altered.
+ + 
  + This is also possible without first parsing an URI. An empty struct can always be created.
  + -------
- + auto uri = URI();
- + uri.scheme = "https";
- + uri.host = "github.com";
+ + auto u = URI();
+ + u.scheme = "https";
+ + u.host = "github.com";
  + -------
  + 
  + Example:
  + -------
- + auto uri = URI("http://www.puremagic.com/");
- + uri.host = "d.puremagic.com";
- + uri.path = ["issues", "show_bug.cgi"];
- + uri.query = ["id": "8980"];
- + writeln(uri);
+ + auto u = URI("http://www.puremagic.com/");
+ + u.host = "d.puremagic.com";
+ + u.path = ["issues", "show_bug.cgi"];
+ + u.query = ["id": "8980"];
+ + writeln(u);
  + -------
  + 
  + Example:
  + -------
- + auto uri = URI("http://dlang.org/");
- + uri.rawPath = "phobos/std_stdio.html";
- + uri.fragment = "writeln";
- + assert(uri == "http://dlang.org/phobos/std_stdio.html#writeln");
+ + auto u = URI("http://dlang.org/");
+ + u.rawPath = "phobos/std_stdio.html";
+ + u.fragment = "writeln";
+ + assert(u == "http://dlang.org/phobos/std_stdio.html#writeln");
  + -------
  + 
  + Note:        There are multiple ways to read and/or alter the path and query of an URI and they can all be used interchangeably.
