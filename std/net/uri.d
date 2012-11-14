@@ -1,3 +1,63 @@
+//Written in the D programming language
+
+/++
+ + Parser for URIs which makes it easier to access its components.
+ + 
+ + The URI will be split up into the following components:
+ + $(UL
+ +     $(LI $(D scheme))
+ +     $(LI $(D authority) $(UL
+ +         $(LI $(D userinfo) $(UL
+ +             $(LI $(D username))
+ +             $(LI $(D password))
+ +         ))
+ +         $(LI $(D host))
+ +         $(LI $(D port))
+ +     ))
+ +     $(LI $(D path))
+ +     $(LI $(D query))
+ +     $(LI $(D fragment))
+ + )
+ + 
+ + Its usage is quite straightforward; to parse an URI, the user should give the string to the constructor as follows:
+ + -------
+ + auto uri = URI("http://dlang.org/");
+ + -------
+ + From this point on, components of the URI can be both read and altered.
+ + This is also possible without first parsing an URI. An empty struct can always be created.
+ + -------
+ + auto uri = URI();
+ + uri.scheme = "https";
+ + uri.host = "github.com";
+ + -------
+ + 
+ + Example:
+ + -------
+ + auto uri = URI("http://www.puremagic.com/");
+ + uri.host = "d.puremagic.com";
+ + uri.path = ["issues", "show_bug.cgi"];
+ + uri.query = ["id": "8980"];
+ + writeln(uri);
+ + -------
+ + 
+ + Example:
+ + -------
+ + auto uri = URI("http://dlang.org/");
+ + uri.rawPath = "phobos/std_stdio.html";
+ + uri.fragment = "writeln";
+ + assert(uri == "http://dlang.org/phobos/std_stdio.html#writeln");
+ + -------
+ + 
+ + Note:        There are multiple ways to read and/or alter the path and query of an URI and they can all be used interchangeably.
+ + Standards:   Conforms to RFC 3986
+ + References:  $(LINK2 http://en.wikipedia.org/wiki/URI_scheme, URI scheme), 
+ +              $(LINK2 http://tools.ietf.org/html/rfc3986, RFC 3986)
+ +
+ + Copyright:   Copyright 2012
+ + License:     $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
+ + Authors:     $(LINK2 mailto:dlang [replace-with-at-sign] mikevandongen.nl, Mike van Dongen)
+ + Source:      $(PHOBOSSRC std/net/_uri.d)
+ +/
 module std.net.uri;
 
 private import std.ascii : letters, digits, isAlpha;
@@ -6,9 +66,6 @@ private import std.conv : to;
 private import std.exception : enforce, assertThrown;
 private import std.array : split, join;
 
-/**
- * @author      Mike van Dongen <dlang@mikevandongen.nl>
- */
 struct URI
 {
     private
@@ -184,7 +241,7 @@ struct URI
         return uri;
     }
     
-    bool opEquals(const URI o) const
+    bool opEquals(const URI o) const    // If I remove the 2 const, the code coverage will be 100%. I believe it's because of a bug.
     {
         return 
             _path     == o._path &&
@@ -202,9 +259,6 @@ struct URI
         return toString() == b;
     }
     
-    /**
-     * This method parses an URI as defined in RFC 3986 (http://www.ietf.org/rfc/rfc3986.txt).
-     */
     this(in string requestUri)
     {
         string rawUri = requestUri;
@@ -275,6 +329,44 @@ struct URI
         fragment = rawUri[1 .. $];                                                          // If there is anything left, it must be the fragment.
     }
     
+    this(in string scheme, in string host)
+    {
+        this.scheme = scheme;
+        this.host = host;
+    }
+    
+    this(in string scheme, in string host, in string path)
+    {
+        this.scheme = scheme;
+        this.host = host;
+        this.rawPath = path;
+    }
+    
+    this(in string scheme, in string host, in string[] path)
+    {
+        this.scheme = scheme;
+        this.host = host;
+        this.path = path.dup;
+    }
+    
+    this(in string scheme, in string username, in string password, in string host, in string path)
+    {
+        this.scheme = scheme;
+        this.username = username;
+        this.password = password;
+        this.host = host;
+        this.rawPath = path;
+    }
+    
+    this(in string scheme, in string username, in string password, in string host, in string[] path)
+    {
+        this.scheme = scheme;
+        this.username = username;
+        this.password = password;
+        this.host = host;
+        this.path = path.dup;
+    }
+    
     unittest
     {
         enum URI uri1 = URI("http://dlang.org/");
@@ -319,12 +411,6 @@ struct URI
         
         enum URI uri7 = URI("http-://anything.com");
         assert(uri7.scheme == "http-");
-        
-        assertThrown(URI("-http://anything.com"));
-        
-        assertThrown(URI("5five:anything"));
-        
-        assertThrown(URI("irc"));
         
         enum URI uri8 = URI("ftp://ftp.is.co.za/rfc/rfc1808.txt");
         assert(uri8.scheme == "ftp");
@@ -397,14 +483,6 @@ struct URI
         assert(!("nothere" in uri16.query));
         assert(uri16 == "foo://username:password@example.com:8042/over/there/index.dtb?type=animal&name=narwhal&novalue#nose");
         
-        assertThrown(URI("http://[an incomplete ipv6 address/path/to/file.d"));
-        
-        assertThrown(URI("http:///path/to/file.d"));
-        
-        assertThrown(URI("d"));
-        
-        assertThrown(URI("ldap://[2001:db8::7]character:8080/c=GB?objectClass?one"));
-        
         enum URI uri21 = URI("ftp://userwithoutpassword@about.com/");
         assert(uri21.scheme == "ftp");
         assert(uri21.host == "about.com");
@@ -441,6 +519,15 @@ struct URI
         uri.query = ["type": "animal", "name": "narwhal", "novalue": ""];
         uri.fragment = "nose";
         assert(uri == URI("foo://username:password@example.com:8042/over/there/index.dtb?novalue=&type=animal&name=narwhal#nose"));
+        assert(uri.query ==  ["type": "animal", "name": "narwhal", "novalue": ""]);
+        assert(uri.queryMulti == cast(const) ["type": ["animal"], "name": ["narwhal"], "novalue": [""]]);
+        uri.authority = "";
+        assert(uri.host.length == 0);
+        assert(uri.port == 0);
+        assert(uri.username.length == 0);
+        assert(uri.password.length == 0);
+        assert(uri.rawPath == "over/there/index.dtb");
+        assert(uri.rawQuery == "novalue=&type=animal&name=narwhal");
         
         uri = URI();
         uri.scheme = "https";
@@ -450,6 +537,31 @@ struct URI
         uri.path = uri.path ~ ["blob", "master", "cgi.d"];
         uri.fragment = "L1070";
         assert(uri == "https://github.com/adamdruppe/misc-stuff-including-D-programming-language-web-stuff/blob/master/cgi.d#L1070");
+        uri.query = ["type": "animal"];
+        uri.username = "user";
+        uri.password = "pass";
+        uri.path = [];
+        assert(uri == "https://user:pass@github.com/?type=animal#L1070");
+        uri.port = 8080;
+        assert(uri == "https://user:pass@github.com:8080/?type=animal#L1070");
+        
+        URI("http://dlang.org/");
+        URI("tel:+1-816-555-1212");
+        URI("ftp://userwithoutpassword@about.com/");
+        URI("ftp://user:password@about.com/");
+        URI("http://www.ietf.org/rfc/rfc2396.txt");
+        URI("http://dlang.org/phobos/std_string.html#indexOf");
+        URI("http://d.puremagic.com/issues/show_bug.cgi?id=4019");
+        URI("ldap://[2001:db8::7]/");
+        URI("http://website.com/?key");
+        
+        assertThrown(URI("-http://anything.com"));
+        assertThrown(URI("5five:anything"));
+        assertThrown(URI("irc"));
+        assertThrown(URI("http://[an incomplete ipv6 address/path/to/file.d"));
+        assertThrown(URI("http:///path/to/file.d"));
+        assertThrown(URI("d"));
+        assertThrown(URI("ldap://[2001:db8::7]character:8080/c=GB?objectClass?one"));
         
 //      If relative URIs will be supported, these unittests should pass.
         
