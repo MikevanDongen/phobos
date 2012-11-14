@@ -108,13 +108,13 @@ struct URI
         }
         
         string rawAuthority = value;
-        long i = indexOf(value, "@");
+        int i = cast(int) indexOf(value, "@");
         if(i != -1)                                                         // Check if it contains userinfo.
         {
             string userinfo = value[0 .. i];
             value = value[i+1 .. $];
             
-            i = indexOf(userinfo, ":");
+            i = cast(int) indexOf(userinfo, ":");
             if(i != -1)                                                     // Check if it has a password.
             {
                 password = userinfo[i+1 .. $];
@@ -134,14 +134,14 @@ struct URI
         bool ipLiteral = false;
         if(value[0] == '[')                                                 // Check if it's an IPv6 address (aka IP literal).
         {
-            i = indexOf(value, "]");
+            i = cast(int) indexOf(value, "]");
             enforce(i != -1, "An IPv6 address should always end with the character ']'!");
             host = value[0 .. i+1];
             value = value[i+1 .. $];
             ipLiteral = true;
         }
         
-        i = indexOf(value, ":");
+        i = cast(int) indexOf(value, ":");
         if(i != -1)                                                         // Check if it contains a port number.
         {
             if(ipLiteral)                                                   // If it has a portnumber, it should be immediately after the IPv6 address.
@@ -277,17 +277,17 @@ struct URI
         }
         
         rawUri = rawUri[3 .. $];
-        ulong endIndex = rawUri.length;
+        uint endIndex = cast(uint) rawUri.length;
         
-        void setIfSmaller(in long i)
+        void setIfSmaller(in int i)
         {
             if(i != -1 && i < endIndex)
                 endIndex = i;
         }
         
-        setIfSmaller(indexOf(rawUri, "/"));
-        setIfSmaller(indexOf(rawUri, "?"));
-        setIfSmaller(indexOf(rawUri, "#"));
+        setIfSmaller(cast(int) indexOf(rawUri, "/"));
+        setIfSmaller(cast(int) indexOf(rawUri, "?"));
+        setIfSmaller(cast(int) indexOf(rawUri, "#"));
         
         enforce(endIndex, "The authority cannot be empty!");                                // The path must be absolute, therefore the authority can not be empty.
         
@@ -302,10 +302,10 @@ struct URI
         if(rawUri[0] == '/')                                                                // The URI has a path. This code is almost identical to the lines above.
         {
             rawUri = rawUri[1 .. $];
-            endIndex = rawUri.length;
+            endIndex = cast(int) rawUri.length;
             
-            setIfSmaller(indexOf(rawUri, "?"));
-            setIfSmaller(indexOf(rawUri, "#"));
+            setIfSmaller(cast(int) indexOf(rawUri, "?"));
+            setIfSmaller(cast(int) indexOf(rawUri, "#"));
             
             rawPath = rawUri[0 .. endIndex];
             rawUri = rawUri[endIndex .. $];
@@ -316,9 +316,9 @@ struct URI
         if(rawUri[0] == '?')                                                                // The URI has a query. This code is identical to the lines above.
         {
             rawUri = rawUri[1 .. $];
-            endIndex = rawUri.length;
+            endIndex = cast(int) rawUri.length;
             
-            setIfSmaller(indexOf(rawUri, "#"));
+            setIfSmaller(cast(int) indexOf(rawUri, "#"));
             
             rawQuery = rawUri[0 .. endIndex];
             rawUri = rawUri[endIndex .. $];
